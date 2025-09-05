@@ -12,6 +12,14 @@ export default function Post() {
 
     const userData = useSelector((state) => state.auth.userData);
 
+    // If user is not authenticated, redirect to login before loading full post
+    useEffect(() => {
+        if (!userData) {
+            // Delay redirect slightly so route transitions remain smooth
+            navigate('/login');
+        }
+    }, [userData, navigate]);
+
     const isAuthor = post && userData ? post.userId === userData.$id : false;
 
     useEffect(() => {
@@ -59,7 +67,7 @@ export default function Post() {
                     <h1 className="text-2xl font-bold">{post.title}</h1>
                 </div>
                 <div className="browser-css">
-                    {parse(post.content)}
+                    {parse(post.Content)}
                     </div>
             </Container>
         </div>

@@ -10,7 +10,7 @@ export default function PostForm({ post }) {
         defaultValues: {
             title: post?.title || "",
             slug: post?.$id || "",
-            content: post?.content || "",
+            Content: post?.Content || "",
             status: post?.status || "active",
         },
     });
@@ -19,33 +19,75 @@ export default function PostForm({ post }) {
     const userData = useSelector((state) => state.auth.userData);
 
     const submit = async (data) => {
-        if (post) {
-            const file = data.image[0] ? await appwriteService.uploadFile(data.image[0]) : null;
+        console.log("Submit function called with data:", data);
+        console.log("User data:", userData);
+        
+        try {
+            if (post) {
+                // Update existing post
+                const file = data.image && data.image[0] ? await appwriteService.uploadFile(data.image[0]) : null;
 
-            if (file) {
-                appwriteService.deleteFile(post.featuredImage);
-            }
+                if (file && post?.featuredImage) {
+                    // remove old image file
+                    appwriteService.deleteFile(post.featuredImage);
+                }
 
-            const dbPost = await appwriteService.updatePost(post.$id, {
-                ...data,
-                featuredImage: file ? file.$id : undefined,
-            });
+                // Build a sanitized payload for update; do not include file input objects or slug.
+                const updatePayload = {
+                    title: data.title,
+                    Content: data.Content,
+                    featuredImage: file ? file.$id : post?.featuredImage,
+                    status: data.status,
+                };
 
-            if (dbPost) {
-                navigate(`/post/${dbPost.$id}`);
-            }
-        } else {
-            const file = await appwriteService.uploadFile(data.image[0]);
-
-            if (file) {
-                const fileId = file.$id;
-                data.featuredImage = fileId;
-                const dbPost = await appwriteService.createPost({ ...data, userId: userData.$id });
+                const dbPost = await appwriteService.updatePost(post.$id, updatePayload);
 
                 if (dbPost) {
                     navigate(`/post/${dbPost.$id}`);
                 }
+            } else {
+                // Create new post
+                console.log("Creating new post...");
+                
+                if (!userData || !userData.$id) {
+                    alert("You must be logged in to create a post");
+                    return;
+                }
+
+                if (!data.image || !data.image[0]) {
+                    alert("Please select a featured image");
+                    return;
+                }
+
+                console.log("Uploading file...");
+                const file = await appwriteService.uploadFile(data.image[0]);
+                console.log("File uploaded:", file);
+
+                if (file) {
+                    const fileId = file.$id;
+const postData = {
+    title: data.title,
+    slug: data.slug,
+    Content: data.Content,
+    featuredImage: fileId,
+    status: data.status,
+    userId: userData.$id 
+};
+                    
+                    console.log("Creating post with data:", postData);
+                    const dbPost = await appwriteService.createPost(postData);
+                    console.log("Post created:", dbPost);
+
+                    if (dbPost) {
+                        navigate(`/post/${dbPost.$id}`);
+                    }
+                } else {
+                    alert("Failed to upload image");
+                }
             }
+        } catch (error) {
+            console.error("Detailed error submitting post:", error);
+            alert(`Error submitting post: ${error.message || error}`);
         }
     };
 
@@ -88,7 +130,7 @@ export default function PostForm({ post }) {
                         setValue("slug", slugTransform(e.currentTarget.value), { shouldValidate: true });
                     }}
                 />
-                <RTE label="Content :" name="content" control={control} defaultValue={getValues("content")} />
+                <RTE label="Content :" name="Content" control={control} defaultValue={getValues("Content")} />
             </div>
             <div className="w-1/3 px-2">
                 <Input

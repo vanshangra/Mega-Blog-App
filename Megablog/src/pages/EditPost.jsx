@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {Container, PostForm} from "../components";
 import appwriteService from "../appwrite/config";
 import { useNavigate, useParams } from 'react-router-dom';
 
 function EditPost() {
-    const [post, setPosts] = useState([]);
+  // store a single post object; initialize to null so the page doesn't render until loaded
+  const [post, setPost] = useState(null);
     const {slug} = useParams();
     const navigate = useNavigate()
 
@@ -12,7 +13,7 @@ function EditPost() {
       if(slug){
         appwriteService.getPost(slug).then((post) => {
           if(post){
-            setPosts(post)
+            setPost(post)
           }
         })
       }else{

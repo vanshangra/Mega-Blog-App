@@ -11,24 +11,28 @@ function Login() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const {register, handleSubmit} = useForm()
-    const {error, setError} = useState("")
+    const [error, setError] = useState("")
 
     const login = async(data) => {
         setError("")
+        console.log("Login attempt with data:", data);
         try {
            const session = await authService.login(data) 
+           console.log("Login session:", session);
            if(session){
             const userData = await authService.getCurrentUser()
-            if(userData) dispatch(authLogin(userData))
+            console.log("User data:", userData);
+            if(userData) dispatch(authLogin({userData}))
             navigate('/')
            }
         } catch (error) {
+            console.error("Login error:", error);
             setError(error.message)
         }
     }
     return (
         <div className='flex items-center justify-center w-full'>
-            <div className={`mx-auto w-full max-w-lg bg-gray-100 rounded-xl p-100 border border-black/10`}>
+            <div className={`mx-auto w-full max-w-lg bg-gray-100 rounded-xl p-10 border border-black/10`}>
             <div className='mb-2 flex justify-center'>
                 <span className='inline-block w-full max-w-[100px]'>
                     <Logo width="100%" />
@@ -59,7 +63,7 @@ function Login() {
                     />
                     <Input
                     label="Password:"
-                    type="Password"
+                    type="password"
                     placeholder="Enter your password"
                     {...register("password",{
                         required: true,

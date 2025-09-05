@@ -8,16 +8,12 @@ export default function Protected({children, authentication = true}) {
     const authStatus = useSelector(state => state.auth.status)
 
     useEffect(() => {
-      //todo: make it more easy
-      // if (authStatus===true){
-      //   navigate('/')
-      // }else if (authStatus===false){
-      //   navigate('/login')
-      // }
-
+      // If authentication is required and user is not authenticated, redirect to login
       if(authentication && authStatus !== authentication){
         navigate('/login')
-      }else if(!authentication && authStatus !== authentication){
+      }
+      // If authentication is not required (like signup/login pages) and user is already authenticated, redirect to home
+      else if(!authentication && authStatus !== authentication){
         navigate('/')
       }
       setLoader(false)

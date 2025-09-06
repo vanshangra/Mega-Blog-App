@@ -7,6 +7,12 @@ export class Service{
     bucket;
 
     constructor() {
+        // Fail fast with a readable error when required environment config is missing.
+        if (!conf.appwriteURL || !conf.appwriteProjectId) {
+            console.error('Missing Appwrite configuration. Ensure VITE_APPWRITE_URL and VITE_APPWRITE_PROJECT_ID are set.');
+            throw new Error('Appwrite configuration missing: VITE_APPWRITE_URL and/or VITE_APPWRITE_PROJECT_ID.');
+        }
+
         this.client
             .setEndpoint(conf.appwriteURL)
             .setProject(conf.appwriteProjectId);
@@ -18,7 +24,7 @@ export class Service{
         console.log("createPost called with:", {title, slug, Content, featuredImage, status, userId});
         console.log("Config values:", {
             databaseId: conf.appwriteDatabaseId,
-            collectionId: conf.appwriteCollectionId
+            collectionId: conf.appwriteCollectionId,
         });
         
         try {
